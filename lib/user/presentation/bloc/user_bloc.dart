@@ -24,6 +24,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       await addUser(event.user);
       final users = await getUsers();
       emit(state.copyWith(users: users, filtered: users));
+      
     });
 
     // SEARCH USER

@@ -7,7 +7,7 @@ import 'package:total_x/user/domain/usecases/get_users.dart';
 import 'package:total_x/user/presentation/bloc/user_bloc.dart';
 import 'package:total_x/user/presentation/bloc/user_event.dart';
 import 'package:total_x/user/presentation/pages/home_page.dart';
-
+import 'package:total_x/user/presentation/pages/login_page.dart';
 
 void main() {
   final localDataSource = LocalDataSource();
@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
       create: (_) => UserBloc(addUser, getUsers)..add(LoadUsers()),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: HomePage(),
+        home: LoginPage(),
       ),
     );
   }

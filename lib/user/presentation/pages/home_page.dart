@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import '../../domain/entities/user.dart';
 import '../bloc/user_bloc.dart';
 import '../bloc/user_event.dart';
@@ -68,16 +69,38 @@ class HomePage extends StatelessWidget {
 
                     return Card(
                       margin: const EdgeInsets.only(bottom: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
                       child: ListTile(
-                        leading: CircleAvatar(
-                          child: Text(user.name[0].toUpperCase()),
-                        ),
+                        leading: user.image != null
+                            ? CircleAvatar(
+                                backgroundImage: FileImage(File(user.image!)),
+                              )
+                            : CircleAvatar(
+                                child: Text(user.name[0].toUpperCase()),
+                              ),
+                              
                         title: Text(user.name),
                         subtitle: Text(user.phone),
-                        trailing: Text("Age ${user.age}"),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Age ${user.age}"),
+                            const SizedBox(height: 5),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color:
+                                    user.age >= 60 ? Colors.red : Colors.green,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                user.age >= 60 ? "Older" : "Younger",
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 12),
+                              ),
+                            )
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -98,50 +121,81 @@ class HomePage extends StatelessWidget {
     final phoneController = TextEditingController();
     final ageController = TextEditingController();
 
+    File? selectedImage;
+
     showDialog(
       context: context,
-      builder: (_) {
-        return AlertDialog(
-          title: const Text("Add User"),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(hintText: "Name"),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Add User"),
+              content: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // 📸 IMAGE PICKER
+                    GestureDetector(
+                      onTap: () async {
+                        final picked = await ImagePicker()
+                            .pickImage(source: ImageSource.gallery);
+
+                        if (picked != null) {
+                          setState(() {
+                            selectedImage = File(picked.path);
+                          });
+                        }
+                      },
+                      child: CircleAvatar(
+                        radius: 40,
+                        backgroundImage: selectedImage != null
+                            ? FileImage(selectedImage!)
+                            : null,
+                        child: selectedImage == null
+                            ? const Icon(Icons.camera_alt)
+                            : null,
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(hintText: "Name"),
+                    ),
+                    TextField(
+                      controller: phoneController,
+                      decoration: const InputDecoration(hintText: "Phone"),
+                    ),
+                    TextField(
+                      controller: ageController,
+                      decoration: const InputDecoration(hintText: "Age"),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ],
                 ),
-                TextField(
-                  controller: phoneController,
-                  decoration: const InputDecoration(hintText: "Phone"),
+              ),
+              actions: [
+                TextButton(
+                  child: const Text("Cancel"),
+                  onPressed: () => Navigator.pop(context),
                 ),
-                TextField(
-                  controller: ageController,
-                  decoration: const InputDecoration(hintText: "Age"),
-                  keyboardType: TextInputType.number,
+                ElevatedButton(
+                  child: const Text("Add"),
+                  onPressed: () {
+                    final user = User(
+                      name: nameController.text,
+                      phone: phoneController.text,
+                      age: int.parse(ageController.text),
+                      image: selectedImage?.path,
+                    );
+
+                    context.read<UserBloc>().add(AddUserEvent(user));
+                    Navigator.pop(context);
+                  },
                 ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              child: const Text("Cancel"),
-              onPressed: () => Navigator.pop(context),
-            ),
-            ElevatedButton(
-              child: const Text("Add"),
-              onPressed: () {
-                final user = User(
-                  name: nameController.text,
-                  phone: phoneController.text,
-                  age: int.parse(ageController.text),
-                );
-
-                context.read<UserBloc>().add(AddUserEvent(user));
-
-                Navigator.pop(context);
-              },
-            ),
-          ],
+            );
+          },
         );
       },
     );
