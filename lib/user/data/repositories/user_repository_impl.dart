@@ -18,4 +18,25 @@ class UserRepositoryImpl implements UserRepository {
   Future<List<User>> getUsers() async {
     return await local.getUsers();
   }
+
+  @override
+  Future<void> setLoggedIn(bool value) async {
+    await local.setLoggedIn(value);
+  }
+
+  @override
+  Future<bool> isLoggedIn() async {
+    return await local.isLoggedIn();
+  }
+
+  @override
+  Future<User?> getCurrentUser() async {
+    return await local.getCurrentUser();
+  }
+
+  @override
+  Future<void> updateUser(User user) async {
+    final model = UserModel.fromUser(user);
+    await local.updateUser(model);
+  }
 }

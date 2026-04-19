@@ -28,10 +28,17 @@ class _LoginPageState extends State<LoginPage> {
 
   void _sendOtp(BuildContext context) {
     final trimmed = phone.trim();
-    if (trimmed.isEmpty || trimmed.length != 10) {
+    if (trimmed.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your phone number.')),
+      );
+      return;
+    }
+    if (trimmed.length != 10 || !RegExp(r'^[6-9]').hasMatch(trimmed)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Please enter a valid 10-digit phone number.')),
+            content: Text(
+                'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.')),
       );
       return;
     }

@@ -7,24 +7,36 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:total_x/core/services/otp_services.dart';
 import 'package:total_x/main.dart';
+import 'package:total_x/user/domain/usecases/add_user.dart';
+import 'package:total_x/user/domain/usecases/get_current_user.dart';
+import 'package:total_x/user/domain/usecases/get_users.dart';
+import 'package:total_x/user/domain/usecases/set_logged_in.dart';
+import 'package:total_x/user/domain/usecases/update_user.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('App smoke test', (WidgetTester tester) async {
+    // Create dummy use cases (since this is just a smoke test)
+    final dummyAddUser = AddUser(null as dynamic); // Dummy
+    final dummyGetUsers = GetUsers(null as dynamic);
+    final dummySetLoggedIn = SetLoggedIn(null as dynamic);
+    final dummyGetCurrentUser = GetCurrentUser(null as dynamic);
+    final dummyUpdateUser = UpdateUser(null as dynamic);
+    final dummyOtpService = OtpService();
+
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(MyApp(
+      addUser: dummyAddUser,
+      getUsers: dummyGetUsers,
+      setLoggedIn: dummySetLoggedIn,
+      getCurrentUser: dummyGetCurrentUser,
+      updateUser: dummyUpdateUser,
+      otpService: dummyOtpService,
+      isLoggedIn: false,
+    ));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Just verify the app builds without crashing
+    expect(find.byType(MaterialApp), findsOneWidget);
   });
 }

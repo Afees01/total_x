@@ -8,6 +8,8 @@ import 'package:total_x/core/widgets/app_button.dart';
 import 'package:total_x/user/presentation/bloc/OTP_bloc/otp_bloc.dart';
 import 'package:total_x/user/presentation/bloc/OTP_bloc/otp_event.dart';
 import 'package:total_x/user/presentation/bloc/OTP_bloc/otp_state.dart';
+import 'package:total_x/user/presentation/bloc/User_bloc/user_event.dart';
+import 'package:total_x/user/presentation/bloc/user_bloc.dart';
 import 'package:total_x/user/presentation/pages/home_page.dart';
 
 class OtpPage extends StatefulWidget {
@@ -62,7 +64,8 @@ class _OtpPageState extends State<OtpPage> {
     final trimmedOtp = otp.trim();
     if (trimmedOtp.length < 4) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter the 4-digit OTP.')),
+        const SnackBar(
+            content: Text('Please enter the complete 4-digit OTP code.')),
       );
       return;
     }
@@ -129,6 +132,7 @@ class _OtpPageState extends State<OtpPage> {
     return BlocListener<OtpBloc, OtpState>(
       listener: (context, state) {
         if (state is OtpVerified) {
+          context.read<UserBloc>().add(LoginEvent(widget.phone));
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => HomePage()),

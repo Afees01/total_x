@@ -226,16 +226,24 @@ class HomePage extends StatelessWidget {
                           height: 40,
                           borderRadius: 8,
                           backgroundColor: AppColors.accent,
-                          onTap: () {
+                          onTap: () async {
                             if (nameController.text.isEmpty ||
                                 ageController.text.isEmpty) return;
-                            final user = User(
-                              name: nameController.text,
-                              phone: '',
-                              age: int.tryParse(ageController.text) ?? 0,
-                              image: selectedImage?.path,
-                            );
-                            context.read<UserBloc>().add(AddUserEvent(user));
+                            final currentUser = await context
+                                .read<UserBloc>()
+                                .getCurrentUser
+                                .call();
+                            if (currentUser != null) {
+                              final updatedUser = User(
+                                name: nameController.text,
+                                phone: currentUser.phone,
+                                age: int.tryParse(ageController.text) ?? 0,
+                                image: selectedImage?.path,
+                              );
+                              context
+                                  .read<UserBloc>()
+                                  .add(UpdateUserEvent(updatedUser));
+                            }
                             Navigator.pop(context);
                           },
                         ),

@@ -24,23 +24,34 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
     try {
       final response = await otpService.sendOtp(event.phone);
       if (response == null) {
-        emit(OtpFailure('OTP service not initialized.'));
+        emit(OtpFailure(
+            'Unable to connect to OTP service. Please check your internet connection.'));
+        return;
+      }
+
+      if (response['type'] != 'success') {
+        final errorMessage =
+            _getMeaningfulErrorMessage(response['message']?.toString());
+        emit(OtpFailure(errorMessage));
         return;
       }
 
       final reqId = _extractReqId(response);
       if (reqId.isEmpty) {
-        emit(OtpFailure('OTP sent but no request id returned.'));
+        emit(OtpFailure(
+            'OTP request was sent but we couldn\'t get a confirmation. Please try again.'));
         return;
       }
 
       emit(OtpSent(phone: event.phone, reqId: reqId));
     } catch (error) {
-      emit(OtpFailure('Send OTP failed: $error'));
+      emit(OtpFailure(
+          'Failed to send OTP. Please check your internet connection and try again.'));
     }
   }
 
-  Future<void> _onVerifyOtp(VerifyOtpEvent event, Emitter<OtpState> emit) async {
+  Future<void> _onVerifyOtp(
+      VerifyOtpEvent event, Emitter<OtpState> emit) async {
     emit(OtpVerifyLoading());
 
     try {
@@ -48,33 +59,47 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
       if (response != null && response['type'] == 'success') {
         emit(OtpVerified());
       } else {
-        emit(OtpFailure(response?['message']?.toString() ?? 'Invalid OTP'));
+        final errorMessage =
+            _getMeaningfulErrorMessage(response?['message']?.toString());
+        emit(OtpFailure(errorMessage));
       }
     } catch (error) {
-      emit(OtpFailure('OTP verification failed: $error'));
+      emit(OtpFailure(
+          'Failed to verify OTP. Please check your internet connection and try again.'));
     }
   }
 
-  Future<void> _onResendOtp(ResendOtpEvent event, Emitter<OtpState> emit) async {
+  Future<void> _onResendOtp(
+      ResendOtpEvent event, Emitter<OtpState> emit) async {
     emit(OtpResending());
 
     try {
       final response = await otpService.retryOtp(event.reqId);
       if (response == null) {
-        emit(OtpFailure('OTP service not initialized.'));
+        emit(OtpFailure(
+            'Unable to connect to OTP service. Please check your internet connection.'));
+        return;
+      }
+
+      if (response['type'] != 'success') {
+        final errorMessage =
+            _getMeaningfulErrorMessage(response['message']?.toString());
+        emit(OtpFailure(errorMessage));
         return;
       }
 
       final reqId = _extractReqId(response);
       if (reqId.isEmpty) {
-        emit(OtpFailure('Resend OTP succeeded but no request id returned.'));
+        emit(OtpFailure(
+            'OTP was resent but we couldn\'t get a confirmation. Please try again.'));
         return;
       }
 
       log('OTP resent successfully, new reqId: $reqId');
       emit(OtpResent(reqId: reqId));
     } catch (error) {
-      emit(OtpFailure('Resend OTP failed: $error'));
+      emit(OtpFailure(
+          'Failed to resend OTP. Please check your internet connection and try again.'));
     }
   }
 
@@ -110,5 +135,49 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
     }
 
     return '';
+  }
+
+  String _getMeaningfulErrorMessage(String? rawMessage) {
+    if (rawMessage == null || rawMessage.isEmpty) {
+      return 'Something went wrong. Please try again.';
+    }
+
+    final message = rawMessage.toLowerCase();
+
+    // Common OTP service error mappings
+    if (message.contains('ipblocked') || message.contains('ip blocked')) {
+      return 'Too many requests from your device. Please wait a few minutes before trying again.';
+    }
+
+    if (message.contains('invalid') && message.contains('phone')) {
+      return 'Please enter a valid phone number.';
+    }
+
+    if (message.contains('expired') || message.contains('timeout')) {
+      return 'OTP has expired. Please request a new one.';
+    }
+
+    if (message.contains('invalid') && message.contains('otp')) {
+      return 'Incorrect OTP. Please check the code and try again.';
+    }
+
+    if (message.contains('limit') || message.contains('exceeded')) {
+      return 'You\'ve reached the maximum number of attempts. Please try again later.';
+    }
+
+    if (message.contains('network') || message.contains('connection')) {
+      return 'Network connection failed. Please check your internet and try again.';
+    }
+
+    if (message.contains('service') && message.contains('unavailable')) {
+      return 'OTP service is temporarily unavailable. Please try again in a few minutes.';
+    }
+
+    if (message.contains('blocked') || message.contains('suspended')) {
+      return 'Your account has been temporarily blocked. Please contact support.';
+    }
+
+    // If we can't map it to a known error, return a generic but helpful message
+    return 'Failed to process your request. Please try again or contact support if the problem persists.';
   }
 }
