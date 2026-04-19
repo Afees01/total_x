@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:total_x/core/utils/app_colors.dart';
+import 'package:total_x/core/utils/app_text_styles.dart';
+import 'package:total_x/core/widgets/app_button.dart';
+import 'package:total_x/core/widgets/app_text_field.dart';
 import 'package:total_x/user/presentation/bloc/OTP_bloc/otp_bloc.dart';
 import 'package:total_x/user/presentation/bloc/OTP_bloc/otp_event.dart';
 import 'package:total_x/user/presentation/bloc/OTP_bloc/otp_state.dart';
@@ -23,48 +27,15 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _sendOtp(BuildContext context) {
-    final trimmedPhone = phone.trim();
-
-    // Check if phone number is empty
-    if (trimmedPhone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your phone number.')),
-      );
-      return;
-    }
-
-    // Check if phone number contains only digits
-    if (!RegExp(r'^[0-9]+$').hasMatch(trimmedPhone)) {
+    final trimmed = phone.trim();
+    if (trimmed.isEmpty || trimmed.length != 10) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Phone number should contain only digits.')),
+            content: Text('Please enter a valid 10-digit phone number.')),
       );
       return;
     }
-
-    // Check if phone number is exactly 10 digits (for Indian mobile numbers)
-    if (trimmedPhone.length != 10) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please enter a valid 10-digit mobile number.')),
-      );
-      return;
-    }
-
-    // Check if phone number starts with valid Indian mobile prefixes (optional but good practice)
-    final validPrefixes = ['6', '7', '8', '9'];
-    if (!validPrefixes.contains(trimmedPhone[0])) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text(
-                'Please enter a valid Indian mobile number starting with 6, 7, 8, or 9.')),
-      );
-      return;
-    }
-
-    final formattedPhone = '91$trimmedPhone';
-
-    context.read<OtpBloc>().add(SendOtpEvent(formattedPhone));
+    context.read<OtpBloc>().add(SendOtpEvent(trimmed));
   }
 
   @override
@@ -75,14 +46,10 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => OtpPage(
-                phone: state.phone,
-                reqId: state.reqId,
-              ),
+              builder: (_) => OtpPage(phone: phone, reqId: state.reqId),
             ),
           );
         }
-
         if (state is OtpFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
@@ -94,42 +61,89 @@ class _LoginPageState extends State<LoginPage> {
           final isSending = state is OtpSending;
 
           return Scaffold(
-            appBar: AppBar(title: const Text('Login')),
-            body: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: phoneController,
-                    keyboardType: TextInputType.phone,
-                    maxLength: 10,
-                    decoration: InputDecoration(
-                      labelText: 'Phone Number',
-                      hintText: 'Enter 10-digit mobile number',
-                      counterText: '',
-                      prefixIcon: const Icon(Icons.phone),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+            backgroundColor: AppColors.background,
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 32),
+
+                    // Illustration
+                    Center(
+                      child: Image.asset(
+                        'assets/image/Login.png',
+                        height: 160,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Container(
+                          height: 160,
+                          width: 180,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8F4FD),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Icon(
+                            Icons.phone_android_rounded,
+                            size: 72,
+                            color: Color(0xFF1565C0),
+                          ),
+                        ),
                       ),
                     ),
-                    onChanged: (value) {
-                      setState(() {
-                        phone = value.trim();
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: isSending ? null : () => _sendOtp(context),
-                    child: isSending
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Send OTP'),
-                  ),
-                ],
+                    const SizedBox(height: 32),
+
+                    // Title
+                    const Text('Enter Phone', style: AppTextStyles.heading),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'We will send you a verification code.',
+                      style: AppTextStyles.body,
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Phone field
+                    AppTextField(
+                      controller: phoneController,
+                      hint: 'Enter Phone Number',
+                      isPhone: true,
+                      onChanged: (v) => phone = v,
+                    ),
+
+                    const SizedBox(height: 8),
+                    RichText(
+                      text: const TextSpan(
+                        style: AppTextStyles.caption,
+                        children: [
+                          TextSpan(text: "By Continuing, I agree to TotalX's "),
+                          TextSpan(
+                            text: 'Terms and condition',
+                            style: TextStyle(
+                              color: AppColors.accent,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                          TextSpan(text: ' & '),
+                          TextSpan(
+                            text: 'privacy policy',
+                            style: TextStyle(
+                              color: AppColors.accent,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    AppButton(
+                      text: 'Get OTP',
+                      isLoading: isSending,
+                      onTap: () => _sendOtp(context),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
