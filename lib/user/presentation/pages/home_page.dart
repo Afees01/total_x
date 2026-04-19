@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:total_x/user/presentation/bloc/User_bloc/user_event.dart';
+import 'package:total_x/user/presentation/bloc/User_bloc/user_state.dart';
 import '../../domain/entities/user.dart';
 import '../bloc/user_bloc.dart';
-import '../bloc/user_event.dart';
-import '../bloc/user_state.dart';
+
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});

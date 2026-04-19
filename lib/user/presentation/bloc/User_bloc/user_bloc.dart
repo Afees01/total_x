@@ -1,11 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:total_x/user/presentation/bloc/User_bloc/user_event.dart';
-import 'package:total_x/user/presentation/bloc/User_bloc/user_state.dart';
+import 'package:total_x/user/domain/entities/user.dart';
+import 'package:total_x/user/domain/usecases/add_user.dart';
+import 'package:total_x/user/domain/usecases/get_users.dart';
 
-import '../../domain/entities/user.dart';
-import '../../domain/usecases/add_user.dart';
-import '../../domain/usecases/get_users.dart';
-
+import 'user_event.dart';
+import 'user_state.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
   final AddUser addUser;

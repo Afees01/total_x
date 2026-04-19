@@ -1,4 +1,5 @@
-import '../../domain/entities/user.dart';
+
+import 'package:total_x/user/domain/entities/user.dart';
 
 class UserState {
   final List<User> users;
