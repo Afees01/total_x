@@ -23,6 +23,7 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
 
     try {
       final response = await otpService.sendOtp(event.phone);
+      log('OTP send response: $response');
       if (response == null) {
         emit(OtpFailure(
             'Unable to connect to OTP service. Please check your internet connection.'));
@@ -45,6 +46,7 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
 
       emit(OtpSent(phone: event.phone, reqId: reqId));
     } catch (error) {
+      log('OTP send error: $error');
       emit(OtpFailure(
           'Failed to send OTP. Please check your internet connection and try again.'));
     }
@@ -56,6 +58,7 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
 
     try {
       final response = await otpService.verifyOtp(event.reqId, event.otp);
+      log('OTP verify response: $response');
       if (response != null && response['type'] == 'success') {
         emit(OtpVerified());
       } else {
@@ -64,6 +67,7 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
         emit(OtpFailure(errorMessage));
       }
     } catch (error) {
+      log('OTP verify error: $error');
       emit(OtpFailure(
           'Failed to verify OTP. Please check your internet connection and try again.'));
     }
@@ -75,6 +79,7 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
 
     try {
       final response = await otpService.retryOtp(event.reqId);
+      log('OTP resend response: $response');
       if (response == null) {
         emit(OtpFailure(
             'Unable to connect to OTP service. Please check your internet connection.'));
@@ -98,6 +103,7 @@ class OtpBloc extends Bloc<OtpEvent, OtpState> {
       log('OTP resent successfully, new reqId: $reqId');
       emit(OtpResent(reqId: reqId));
     } catch (error) {
+      log('OTP resend error: $error');
       emit(OtpFailure(
           'Failed to resend OTP. Please check your internet connection and try again.'));
     }

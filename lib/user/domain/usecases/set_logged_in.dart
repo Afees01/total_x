@@ -5,7 +5,7 @@ class SetLoggedIn {
 
   SetLoggedIn(this.repository);
 
-  Future<void> call(bool value) async {
-    await repository.setLoggedIn(value);
+  Future<void> call(bool value, {String? phone}) async {
+    await repository.setLoggedIn(value, phone: phone);
   }
 }

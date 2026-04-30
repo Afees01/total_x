@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -86,10 +87,10 @@ class _OtpPageState extends State<OtpPage> {
     return '+91 $masked$last2';
   }
 
-  Widget _buildOtpBox(int index, bool isVerifying) {
+  Widget _buildOtpBox(int index, bool isVerifying, double size) {
     return SizedBox(
-      width: 56,
-      height: 56,
+      width: size,
+      height: size,
       child: TextField(
         controller: _controllers[index],
         focusNode: _focusNodes[index],
@@ -129,6 +130,11 @@ class _OtpPageState extends State<OtpPage> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final horizontalPadding = max(20.0, size.width * 0.06);
+    final imageHeight = min(220.0, size.height * 0.22);
+    final otpBoxSize = min(62.0, size.width * 0.13);
+
     return BlocListener<OtpBloc, OtpState>(
       listener: (context, state) {
         if (state is OtpVerified) {
@@ -164,7 +170,7 @@ class _OtpPageState extends State<OtpPage> {
           ),
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -174,7 +180,7 @@ class _OtpPageState extends State<OtpPage> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Image.asset(
                         'assets/image/OTP.png',
-                        height: 160,
+                        height: imageHeight,
                         fit: BoxFit.contain,
                         errorBuilder: (_, __, ___) => Container(
                           height: 160,
@@ -208,7 +214,7 @@ class _OtpPageState extends State<OtpPage> {
                       4,
                       (i) => Padding(
                         padding: EdgeInsets.only(right: i < 3 ? 12 : 0),
-                        child: _buildOtpBox(i, isVerifying),
+                        child: _buildOtpBox(i, isVerifying, otpBoxSize),
                       ),
                     ),
                   ),

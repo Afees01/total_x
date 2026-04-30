@@ -10,11 +10,12 @@ class OtpService {
     OTPWidget.initializeWidget(widgetId, authToken);
   }
 
-  Future<Map<String, dynamic>?> sendOtp(String phone) async {
-    final data = {'identifier': phone};
-    log('Sending OTP with data: $data');
-    return await OTPWidget.sendOTP(data);
-  }
+Future<Map<String, dynamic>?> sendOtp(String phone) async {
+  final identifier = phone.startsWith('91') ? phone : '91$phone';
+  final data = {'identifier': identifier};
+  log('Sending OTP with data: $data');
+  return await OTPWidget.sendOTP(data);
+}
 
   Future<Map<String, dynamic>?> verifyOtp(String reqId, String otp) async {
     final data = {'reqId': reqId, 'otp': otp};

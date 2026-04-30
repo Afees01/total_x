@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:total_x/core/utils/app_colors.dart';
@@ -47,6 +49,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final horizontalPadding = max(20.0, size.width * 0.06);
+    final imageHeight = min(220.0, size.height * 0.22);
+
     return BlocListener<OtpBloc, OtpState>(
       listener: (context, state) {
         if (state is OtpSent) {
@@ -71,17 +77,17 @@ class _LoginPageState extends State<LoginPage> {
             backgroundColor: AppColors.background,
             body: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 32),
+                    SizedBox(height: max(24.0, size.height * 0.04)),
 
                     // Illustration
                     Center(
                       child: Image.asset(
                         'assets/image/Login.png',
-                        height: 160,
+                        height: imageHeight,
                         fit: BoxFit.contain,
                         errorBuilder: (_, __, ___) => Container(
                           height: 160,

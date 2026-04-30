@@ -66,7 +66,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         age: 0,
       );
       await addUser(user);
-      await setLoggedIn(true);
+      await setLoggedIn(true, phone: event.phone);
       final users = await getUsers();
       emit(state.copyWith(users: users, filtered: users));
     });

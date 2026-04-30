@@ -5,41 +5,97 @@ import '../models/user_model.dart';
 class LocalDataSource {
   static const String _userBoxName = 'users';
   static const String _loginKey = 'isLoggedIn';
+  static const String _currentUserPhoneKey = 'currentUserPhone';
 
   late Box<UserModel> _userBox;
   late SharedPreferences _prefs;
 
   Future<void> init() async {
-    _userBox = await Hive.openBox<UserModel>(_userBoxName);
-    _prefs = await SharedPreferences.getInstance();
+    try {
+      _userBox = await Hive.openBox<UserModel>(_userBoxName);
+      _prefs = await SharedPreferences.getInstance();
+    } catch (e) {
+      throw Exception('Failed to initialize local storage: $e');
+    }
   }
 
   Future<void> addUser(UserModel user) async {
-    await _userBox.add(user);
+    try {
+      await _userBox.add(user);
+    } catch (e) {
+      throw Exception('Failed to save user: $e');
+    }
   }
 
   Future<List<UserModel>> getUsers() async {
-    return _userBox.values.toList();
+    try {
+      return _userBox.values.toList();
+    } catch (e) {
+      throw Exception('Failed to load users: $e');
+    }
   }
 
   Future<UserModel?> getCurrentUser() async {
-    final users = await getUsers();
-    return users.isNotEmpty
-        ? users.last
-        : null; // Assuming last added is current
+    try {
+      final currentPhone = await getCurrentUserPhone();
+      if (currentPhone == null) return null;
+
+      final users = _userBox.values.toList();
+      try {
+        return users.firstWhere(
+          (user) => user.phone == currentPhone,
+        );
+      } catch (e) {
+        return null; // User not found
+      }
+    } catch (e) {
+      throw Exception('Failed to get current user: $e');
+    }
   }
 
-  Future<void> setLoggedIn(bool value) async {
-    await _prefs.setBool(_loginKey, value);
+  Future<void> setLoggedIn(bool value, {String? phone}) async {
+    try {
+      await _prefs.setBool(_loginKey, value);
+      if (value && phone != null) {
+        await _prefs.setString(_currentUserPhoneKey, phone);
+      } else if (!value) {
+        await _prefs.remove(_currentUserPhoneKey);
+      }
+    } catch (e) {
+      throw Exception('Failed to update login state: $e');
+    }
   }
 
   Future<bool> isLoggedIn() async {
-    return _prefs.getBool(_loginKey) ?? false;
+    try {
+      return _prefs.getBool(_loginKey) ?? false;
+    } catch (e) {
+      return false; // Default to not logged in on error
+    }
+  }
+
+  Future<String?> getCurrentUserPhone() async {
+    try {
+      return _prefs.getString(_currentUserPhoneKey);
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<void> updateUser(UserModel user) async {
-    // For simplicity, clear and add, assuming one user
-    await _userBox.clear();
-    await _userBox.add(user);
+    try {
+      // Find and update the user with matching phone number
+      final users = _userBox.values.toList();
+      final existingIndex = users.indexWhere((u) => u.phone == user.phone);
+
+      if (existingIndex != -1) {
+        await _userBox.putAt(existingIndex, user);
+      } else {
+        // If user doesn't exist, add them
+        await _userBox.add(user);
+      }
+    } catch (e) {
+      throw Exception('Failed to update user: $e');
+    }
   }
 }

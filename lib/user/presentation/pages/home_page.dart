@@ -1,6 +1,8 @@
+import 'dart:io';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:total_x/core/utils/app_colors.dart';
 import 'package:total_x/core/utils/app_text_styles.dart';
@@ -18,6 +20,11 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final horizontalPadding = max(16.0, size.width * 0.04);
+    final searchHeight = max(44.0, size.height * 0.06);
+    final dialogWidth = min(size.width * 0.92, 420.0);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -26,12 +33,13 @@ class HomePage extends StatelessWidget {
           children: [
             // ── Search bar row
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              padding: EdgeInsets.fromLTRB(
+                  horizontalPadding, horizontalPadding, horizontalPadding, 8),
               child: Row(
                 children: [
                   Expanded(
                     child: SizedBox(
-                      height: 44,
+                      height: searchHeight,
                       child: TextField(
                         controller: searchController,
                         style: AppTextStyles.normal,
@@ -67,8 +75,8 @@ class HomePage extends StatelessWidget {
                   GestureDetector(
                     onTap: () => _showSortDialog(context),
                     child: Container(
-                      height: 44,
-                      width: 44,
+                      height: searchHeight,
+                      width: searchHeight,
                       decoration: BoxDecoration(
                         color: AppColors.primary,
                         borderRadius: BorderRadius.circular(10),
@@ -129,7 +137,10 @@ class HomePage extends StatelessWidget {
   }
 
   void _showAddUserDialog(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final dialogWidth = min(size.width * 0.92, 420.0);
     final nameController = TextEditingController();
+    final phoneController = TextEditingController();
     final ageController = TextEditingController();
     File? selectedImage;
 
@@ -139,120 +150,197 @@ class HomePage extends StatelessWidget {
         return StatefulBuilder(
           builder: (context, setState) {
             return Dialog(
-              backgroundColor: AppColors.background,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Add A New User',
-                        style: AppTextStyles.subheading),
-                    const SizedBox(height: 16),
-
-                    // Avatar picker
-                    Center(
-                      child: GestureDetector(
-                        onTap: () async {
-                          final picked = await ImagePicker()
-                              .pickImage(source: ImageSource.gallery);
-                          if (picked != null) {
-                            setState(() => selectedImage = File(picked.path));
-                          }
-                        },
-                        child: CircleAvatar(
-                          radius: 36,
-                          backgroundColor: const Color(0xFFE3F0FF),
-                          backgroundImage: selectedImage != null
-                              ? FileImage(selectedImage!)
-                              : null,
-                          child: selectedImage == null
-                              ? Stack(
-                                  alignment: Alignment.bottomRight,
-                                  children: [
-                                    const Icon(Icons.person,
-                                        size: 40, color: Color(0xFF90B8E8)),
-                                    Container(
-                                      padding: const EdgeInsets.all(2),
-                                      decoration: const BoxDecoration(
-                                        color: AppColors.accent,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(Icons.camera_alt,
-                                          size: 12,
-                                          color: AppColors.background),
-                                    ),
-                                  ],
-                                )
-                              : null,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    const Text('Name', style: AppTextStyles.label),
-                    const SizedBox(height: 4),
-                    AppTextField(
-                      controller: nameController,
-                      hint: 'Enter name',
-                    ),
-                    const SizedBox(height: 12),
-
-                    const Text('Age', style: AppTextStyles.label),
-                    const SizedBox(height: 4),
-                    AppTextField(
-                      controller: ageController,
-                      hint: 'Enter age',
-                      isNumber: true,
-                      maxLength: 3,
-                    ),
-                    const SizedBox(height: 20),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                backgroundColor: AppColors.background,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                child: SizedBox(
+                  width: dialogWidth,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: TextButton.styleFrom(
-                              foregroundColor: AppColors.textSecondary),
-                          child: const Text('Cancel'),
+                        const Text('Add A New User',
+                            style: AppTextStyles.subheading),
+                        const SizedBox(height: 16),
+
+                        // Avatar picker
+                        Center(
+                          child: GestureDetector(
+                            onTap: () async {
+                              final picked = await ImagePicker()
+                                  .pickImage(source: ImageSource.gallery);
+                              if (picked != null) {
+                                setState(
+                                    () => selectedImage = File(picked.path));
+                              }
+                            },
+                            child: CircleAvatar(
+                              radius: 36,
+                              backgroundColor: const Color(0xFFE3F0FF),
+                              backgroundImage: selectedImage != null
+                                  ? FileImage(selectedImage!)
+                                  : null,
+                              child: selectedImage == null
+                                  ? Stack(
+                                      alignment: Alignment.bottomRight,
+                                      children: [
+                                        const Icon(Icons.person,
+                                            size: 40, color: Color(0xFF90B8E8)),
+                                        Container(
+                                          padding: const EdgeInsets.all(2),
+                                          decoration: const BoxDecoration(
+                                            color: AppColors.accent,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(Icons.camera_alt,
+                                              size: 12,
+                                              color: AppColors.background),
+                                        ),
+                                      ],
+                                    )
+                                  : null,
+                            ),
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        AppButton(
-                          text: 'Save',
-                          width: 90,
-                          height: 40,
-                          borderRadius: 8,
-                          backgroundColor: AppColors.accent,
-                          onTap: () async {
-                            if (nameController.text.isEmpty ||
-                                ageController.text.isEmpty) return;
-                            final currentUser = await context
-                                .read<UserBloc>()
-                                .getCurrentUser
-                                .call();
-                            if (currentUser != null) {
-                              final updatedUser = User(
-                                name: nameController.text,
-                                phone: currentUser.phone,
-                                age: int.tryParse(ageController.text) ?? 0,
-                                image: selectedImage?.path,
-                              );
-                              context
-                                  .read<UserBloc>()
-                                  .add(UpdateUserEvent(updatedUser));
-                            }
-                            Navigator.pop(context);
-                          },
+                        const SizedBox(height: 16),
+
+                        const Text('Name', style: AppTextStyles.label),
+                        const SizedBox(height: 4),
+                        AppTextField(
+                          controller: nameController,
+                          hint: 'Enter name',
+                        ),
+                        const SizedBox(height: 12),
+
+                        const Text('Phone', style: AppTextStyles.label),
+                        const SizedBox(height: 4),
+                        AppTextField(
+                          controller: phoneController,
+                          hint: 'Enter 10-digit phone number',
+                          isNumber: true,
+                          maxLength: 10,
+                        ),
+                        const SizedBox(height: 12),
+
+                        const Text('Age', style: AppTextStyles.label),
+                        const SizedBox(height: 4),
+                        AppTextField(
+                          controller: ageController,
+                          hint: 'Enter age',
+                          isNumber: true,
+                          maxLength: 3,
+                        ),
+                        const SizedBox(height: 20),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: TextButton.styleFrom(
+                                  foregroundColor: AppColors.textSecondary),
+                              child: const Text('Cancel'),
+                            ),
+                            const SizedBox(width: 8),
+                            AppButton(
+                              text: 'Save',
+                              width: 90,
+                              height: 40,
+                              borderRadius: 8,
+                              backgroundColor: AppColors.accent,
+                              onTap: () async {
+                                if (nameController.text.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('Please enter a name.')),
+                                  );
+                                  return;
+                                }
+
+                                if (phoneController.text.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Please enter a 10-digit phone number.')),
+                                  );
+                                  return;
+                                }
+
+                                final phone = phoneController.text.trim();
+                                if (phone.length != 10) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Phone number must be 10 digits.')),
+                                  );
+                                  return;
+                                }
+
+                                // Validate phone starts with 6-9
+                                if (!RegExp(r'^[6-9]').hasMatch(phone)) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Phone number must start with 6-9.')),
+                                  );
+                                  return;
+                                }
+
+                                if (ageController.text.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('Please enter an age.')),
+                                  );
+                                  return;
+                                }
+
+                                final age = int.tryParse(ageController.text);
+                                if (age == null || age <= 0) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Please enter a valid age (greater than 0).')),
+                                  );
+                                  return;
+                                }
+
+                                // Check if phone number already exists
+                                final userState =
+                                    context.read<UserBloc>().state;
+                                final phoneExists = userState.users.any(
+                                  (u) => u.phone == phone,
+                                );
+
+                                if (phoneExists) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'This phone number already exists.')),
+                                  );
+                                  return;
+                                }
+
+                                final newUser = User(
+                                  name: nameController.text.trim(),
+                                  phone: phone,
+                                  age: age,
+                                  image: selectedImage?.path,
+                                );
+
+                                context
+                                    .read<UserBloc>()
+                                    .add(AddUserEvent(newUser));
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            );
+                  ),
+                ));
           },
         );
       },

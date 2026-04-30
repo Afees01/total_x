@@ -20,8 +20,8 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<void> setLoggedIn(bool value) async {
-    await local.setLoggedIn(value);
+  Future<void> setLoggedIn(bool value, {String? phone}) async {
+    await local.setLoggedIn(value, phone: phone);
   }
 
   @override
